@@ -1,0 +1,110 @@
+package br.edu.ifpr.biblioteca_spring;
+
+import br.edu.ifpr.biblioteca_spring.models.Emprestimo;
+import br.edu.ifpr.biblioteca_spring.models.Livro;
+import br.edu.ifpr.biblioteca_spring.models.Usuario;
+import br.edu.ifpr.biblioteca_spring.service.EmprestimoService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+public class EmprestimoServiceTest {
+
+    private EmprestimoService emprestimoService;
+    private Usuario usuario;
+    private Livro livro;
+
+    @BeforeEach
+    void setUp() {
+        emprestimoService = new EmprestimoService();
+        emprestimoService.limpar();
+
+        usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setBloqueado(false);
+
+        livro = new Livro();
+        livro.setId(1L);
+        livro.setDisponivel(true);
+    }
+
+    @Test
+    void devePermitirEmprestimoSeUsuarioNaoBloqueadoETiverMenosDe3Emprestimos() {
+        assertTrue(emprestimoService.podeEmprestar(usuario));
+        emprestimoService.emprestarLivro(usuario, livro);
+        assertTrue(emprestimoService.podeEmprestar(usuario));
+    }
+
+    @Test
+    void naoDevePermitirEmprestimoSeLivroIndisponivel() {
+        livro.setDisponivel(false);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            emprestimoService.emprestarLivro(usuario, livro);
+        });
+        assertEquals("Livro indisponível ou já emprestado.", ex.getMessage());
+    }
+
+    @Test
+    void naoDevePermitirEmprestimoSeUsuarioTiver3Emprestimos() {
+        for (int i = 0; i < 3; i++) {
+            Livro l = new Livro();
+            l.setId((long) i + 1);
+            l.setDisponivel(true);
+            emprestimoService.emprestarLivro(usuario, l);
+        }
+
+        assertFalse(emprestimoService.podeEmprestar(usuario));
+
+        Livro extra = new Livro();
+        extra.setId(999L);
+        extra.setDisponivel(true);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            emprestimoService.emprestarLivro(usuario, extra);
+        });
+        assertEquals("Usuário bloqueado ou com limite de livros atingido.", ex.getMessage());
+    }
+
+    @Test
+    void naoDevePermitirEmprestimoSeUsuarioEstiverBloqueado() {
+        usuario.bloquearAte(LocalDate.now().plusDays(2));
+        assertFalse(emprestimoService.podeEmprestar(usuario));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            emprestimoService.emprestarLivro(usuario, livro);
+        });
+        assertEquals("Usuário bloqueado ou com limite de livros atingido.", ex.getMessage());
+    }
+
+    @Test
+    void deveCalcularDataDesbloqueioCorretamenteComBaseEmAtraso() {
+        Emprestimo emp = emprestimoService.emprestarLivro(usuario, livro);
+
+        // Força atraso de 3 dias
+        LocalDate devolucaoAtrasada = emp.getDataPrevistaDevolucao().plusDays(3);
+        emp.setDataDevolucaoReal(devolucaoAtrasada);
+        livro.setDisponivel(false); // Precisa simular que está emprestado
+
+        var resultado = emprestimoService.devolverLivro(emp.getId());
+        assertTrue(resultado.isEmpty());
+
+        // Espera bloqueio de 5 + 3 = 8 dias
+        LocalDate esperadoDesbloqueio = LocalDate.now().plusDays(8);
+        assertEquals(esperadoDesbloqueio, usuario.getDataDesbloqueio());
+    }
+
+    @Test
+    void deveAgendarDevolucaoParaDiaUtil() {
+        LocalDate sexta = LocalDate.of(2025, 6, 6); // sexta-feira
+        LocalDate devolucao = emprestimoService.calcularDataDevolucao(sexta);
+        assertNotEquals(DayOfWeek.SATURDAY, devolucao.getDayOfWeek());
+        assertNotEquals(DayOfWeek.SUNDAY, devolucao.getDayOfWeek());
+    }
+}
