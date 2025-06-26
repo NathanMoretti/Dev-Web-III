@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+
+
+</head>
+
+<body>
+    <div class="container pt-5">
+        <h1 th:text="${filterTitle != null ? filterTitle : 'Lista de Tarefas'}">Lista de tarefas</h1>
+
+        <div class="mb-3">
+            <h5><a th:href="@{/tasks/create}">Nova Tarefa</a></h5>
+            <h5><a th:href="@{/tasks/in-progress}">Tarefas em Andamento</a></h5>
+            <h5><a th:href="@{/tasks}">Ver Todas as Tarefas</a></h5>
+        </div>
+
+
+        <table class="table table-bordered">
+
+            <tr>
+                <td>Id</td>
+                <td>Título</td>
+                <td>Data</td>
+                <td>Opções</td>
+                <td>Status</td>
+            </tr>
+
+            <tr th:each="t : ${tasksList}">
+                <td th:text="${t.id}">Id</td>
+                <td>
+                    <a th:href="@{/tasks/info/{id}(id=${t.id})}" th:text="${t.titulo}">Título</a>
+                </td>
+                <td th:text="${#temporals.format(t.data, 'dd/MM/yyyy')}">Data</td>
+                <td>
+                    <a th:href="@{tasks/edit/{id}(id=${t.id})}">editar</a>
+                    <a th:href="@{tasks/remove/{id}(id=${t.id})}">excluir</a>
+                </td>
+                <td th:text="${t.taskStatus}">Status</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</body>
+
+</html>
