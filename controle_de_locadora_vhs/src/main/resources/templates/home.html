@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Home</title>
+</head>
+<body>
+
+    <p>Bem-vindo, <span th:text="${usuario.name}">Usuário</span>!</p>
+
+    <h2>Funcionalidades:</h2>
+    <ul>
+        <li><a th:href="@{/vhs}">Gerenciar Fitas VHS</a></li>
+        <li><a th:href="@{/categories}">Gerenciar Categorias</a></li>
+    </ul>
+
+    <p><a th:href="@{/logout}">Sair</a></p>
+</body>
+</html>

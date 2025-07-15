@@ -1,5 +1,8 @@
 run = "cowsay Configure me!"
-entrypoint = "README.md"
+modules = ["java-graalvm22.3", "web", "nix"]
 
 [nix]
 channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "cowsay Configure me!"]

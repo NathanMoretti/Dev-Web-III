@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Lista de Categorias</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Categorias</h1>
+
+    <p th:if="${successMessage}" style="color: green;" th:text="${successMessage}"></p>
+    <p th:if="${errorMessage}" style="color: red;" th:text="${errorMessage}"></p>
+
+    <p><a th:href="@{/categories/new}">Adicionar Nova Categoria</a></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="category : ${categories}">
+                <td th:text="${category.id}"></td>
+                <td th:text="${category.name}"></td>
+                <td>
+                    <a th:href="@{/categories/edit/{id}(id=${category.id})}">Editar</a>
+                    <form th:action="@{/categories/delete/{id}(id=${category.id})}" method="post" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir esta categoria?');">
+                        <button type="submit">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><a th:href="@{/home}">Voltar para Home</a></p>
+    <p><a th:href="@{/logout}">Sair</a></p>
+</body>
+</html>

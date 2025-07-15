@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Lista de Fitas VHS</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        img { max-width: 100px; height: auto; }
+    </style>
+</head>
+<body>
+    <h1>Fitas VHS</h1>
+
+    <p th:if="${successMessage}" style="color: green;" th:text="${successMessage}"></p>
+    <p th:if="${errorMessage}" style="color: red;" th:text="${errorMessage}"></p>
+
+    <p><a th:href="@{/vhs/new}">Adicionar Nova Fita VHS</a></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Imagem</th>
+                <th>Diretor</th>
+                <th>Categoria</th>
+                <th>Data de Cadastro</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="vhs : ${vhsList}">
+                <td th:text="${vhs.id}"></td>
+                <td th:text="${vhs.title}"></td>
+                <td>
+                    <img th:if="${vhs.imageUrl}" th:src="${vhs.imageUrl}" alt="Capa VHS" />
+                    <span th:unless="${vhs.imageUrl}">Sem Imagem</span>
+                </td>
+                <td th:text="${vhs.director}"></td>
+                <td th:text="${vhs.category != null ? vhs.category.name : 'N/A'}"></td>
+                <td th:text="${vhs.registrationDate}"></td>
+                <td th:text="${vhs.status}"></td>
+                <td>
+                    <a th:href="@{/vhs/edit/{id}(id=${vhs.id})}">Editar</a>
+                    <form th:action="@{/vhs/delete/{id}(id=${vhs.id})}" method="post" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir esta fita?');">
+                        <button type="submit">Excluir</button>
+                    </form>
+                    <form th:action="@{/vhs/changeStatus/{id}(id=${vhs.id})}" method="post" style="display:inline;">
+                        <select name="newStatus">
+                            <option th:each="status : ${T(br.edu.ifpr.controle_de_locadora_vhs.entities.TapeStatus).values()}"
+                                    th:value="${status}"
+                                    th:text="${status}"
+                                    th:selected="${status eq vhs.status}"></option>
+                        </select>
+                        <button type="submit">Mudar Status</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><a th:href="@{/home}">Voltar para Home</a></p>
+    <p><a th:href="@{/logout}">Sair</a></p>
+</body>
+</html>
